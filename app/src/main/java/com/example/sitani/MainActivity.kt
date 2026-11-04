@@ -19,7 +19,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SiTaniTheme {
-                MainScreen()
+                AppRoot()
+//                MainScreen()
             }
         }
     }

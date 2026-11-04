@@ -21,6 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.sitani.data.PenjualanViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -40,7 +44,7 @@ val navItems = listOf(
 )
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onLogout: () -> Unit = {}) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -79,12 +83,34 @@ fun MainScreen() {
         ) {
             navItems.forEach { item ->
                 composable(item.route) {
-                    if (item.route == "dasbor") {
-                        DasborScreen(onNavigate = { navController.navigate(it) { launchSingleTop = true } })
-                    } else {
-                        PlaceholderScreen(item.label)
+                    val penjualanViewModel: PenjualanViewModel = viewModel()
+                    when (item.route) {
+                        "dasbor" -> DasborScreen(
+                            onNavigate = { navController.navigate(it) { launchSingleTop = true } },
+                            onLogout = onLogout
+                        )
+                        "panen" -> PenjualanScreen(
+                            viewModel = penjualanViewModel,
+                            onNavigateToAdd = { navController.navigate("panen/form") },
+                            onNavigateToEdit = { id -> navController.navigate("panen/form/$id") }
+                        )
+                        else -> PlaceholderScreen(item.label)
                     }
                 }
+            }
+
+            composable("panen/form") {
+                val penjualanViewModel: PenjualanViewModel = viewModel()
+                PenjualanFormScreen(itemId = null, viewModel = penjualanViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable(
+                route = "panen/form/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")
+                val penjualanViewModel: PenjualanViewModel = viewModel()
+                PenjualanFormScreen(itemId = id, viewModel = penjualanViewModel, onBack = { navController.popBackStack() })
             }
         }
     }

@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -11,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.sitani"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
@@ -53,4 +55,12 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.navigation:navigation-compose:2.8.9")
     implementation("androidx.compose.material:material-icons-core")
+    implementation(platform("io.github.jan-tennert.supabase:bom:3.8.0"))
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    ksp(libs.androidx.room.compiler)
+    implementation("io.github.jan-tennert.supabase:storage-kt")
 }

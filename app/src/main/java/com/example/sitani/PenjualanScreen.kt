@@ -20,6 +20,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.sitani.data.PenjualanPanenEntity
 import com.example.sitani.data.PenjualanViewModel
+import com.example.sitani.ui.components.ConfirmDialog
+import com.example.sitani.ui.components.DateField
+import com.example.sitani.ui.components.EmptyState
+import com.example.sitani.ui.components.FormField
+import com.example.sitani.ui.components.MoneyField
+import com.example.sitani.ui.components.PhotoPickerField
+import com.example.sitani.ui.components.StatusChip
 import com.example.sitani.ui.theme.*
 import java.text.NumberFormat
 import java.util.Calendar
@@ -43,6 +52,32 @@ private data class PenjualanFormSnapshot(
     val namaPembeli: String,
     val keterangan: String,
     val buktiFotoLokal: String?
+)
+
+private val PenjualanFormSnapshotSaver = Saver<PenjualanFormSnapshot, Any>(
+    save = { snapshot ->
+        arrayOf(
+            snapshot.tanggalJual,
+            snapshot.jenisTanaman,
+            snapshot.volumeKg,
+            snapshot.hargaPerKg,
+            snapshot.namaPembeli,
+            snapshot.keterangan,
+            snapshot.buktiFotoLokal ?: ""
+        )
+    },
+    restore = { values ->
+        val arr = values as Array<String>
+        PenjualanFormSnapshot(
+            tanggalJual = arr[0],
+            jenisTanaman = arr[1],
+            volumeKg = arr[2],
+            hargaPerKg = arr[3],
+            namaPembeli = arr[4],
+            keterangan = arr[5],
+            buktiFotoLokal = arr[6].takeIf { it.isNotBlank() }
+        )
+    }
 )
 
 @Composable
@@ -196,24 +231,7 @@ fun PenjualanScreen(
 
             if (filteredList.isEmpty()) {
                 item {
-                    AppCard {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text("Belum ada data penjualan", fontWeight = FontWeight.SemiBold)
-                                Text(
-                                    "Tambahkan transaksi panen untuk mulai mencatat.",
-                                    color = TextSecondary,
-                                    fontSize = 13.sp
-                                )
-                            }
-                        }
-                    }
+                    EmptyState()
                 }
             } else {
                 items(filteredList) { item ->
@@ -293,18 +311,18 @@ fun PenjualanFormScreen(
         PenjualanFormSnapshot(defaultTanggal, "", "", "", "", "", null)
     }
 
-    var tanggalJual by remember { mutableStateOf(defaultTanggal) }
-    var jenisTanaman by remember { mutableStateOf("") }
-    var volumeKgStr by remember { mutableStateOf("") }
-    var hargaPerKgStr by remember { mutableStateOf("") }
-    var namaPembeli by remember { mutableStateOf("") }
-    var keterangan by remember { mutableStateOf("") }
-    var buktiFotoLokal by remember { mutableStateOf<String?>(null) }
+    var tanggalJual by rememberSaveable { mutableStateOf(defaultTanggal) }
+    var jenisTanaman by rememberSaveable { mutableStateOf("") }
+    var volumeKgStr by rememberSaveable { mutableStateOf("") }
+    var hargaPerKgStr by rememberSaveable { mutableStateOf("") }
+    var namaPembeli by rememberSaveable { mutableStateOf("") }
+    var keterangan by rememberSaveable { mutableStateOf("") }
+    var buktiFotoLokal by rememberSaveable { mutableStateOf<String?>(null) }
 
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showDeleteConfirm by remember { mutableStateOf(false) }
-    var showDiscardConfirm by remember { mutableStateOf(false) }
-    var initialForm by remember { mutableStateOf(emptySnapshot) }
+    var errorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by rememberSaveable { mutableStateOf(false) }
+    var showDiscardConfirm by rememberSaveable { mutableStateOf(false) }
+    var initialForm by rememberSaveable(stateSaver = PenjualanFormSnapshotSaver) { mutableStateOf(emptySnapshot) }
 
     // Dropdown suggestions for Komoditas
     val commonKomoditas = listOf("Padi", "Jagung", "Kedelai", "Cabai", "Bawang Merah", "Tomat", "Kacang Tanah")
@@ -353,48 +371,21 @@ fun PenjualanFormScreen(
     val total = (volume * harga).toLong()
     val formatter = remember { NumberFormat.getNumberInstance(Locale.forLanguageTag("id-ID")) }
 
-    if (showDeleteConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirm = false },
-            title = { Text("Hapus Data") },
-            text = { Text("Yakin ingin menghapus data penjualan panen ini?") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDeleteConfirm = false
-                    existingItem?.let { viewModel.deletePenjualan(it.id) }
-                    onBack()
-                }) {
-                    Text("Hapus", color = DangerStrong)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("Batal")
-                }
-            }
-        )
-    }
-
-    if (showDiscardConfirm) {
-        AlertDialog(
-            onDismissRequest = { showDiscardConfirm = false },
-            title = { Text("Buang perubahan?") },
-            text = { Text("Perubahan yang belum disimpan akan hilang.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDiscardConfirm = false
-                    onBack()
-                }) {
-                    Text("Buang", color = DangerStrong)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDiscardConfirm = false }) {
-                    Text("Batal")
-                }
-            }
-        )
-    }
+    ConfirmDialog(
+        showDelete = showDeleteConfirm,
+        showDiscard = showDiscardConfirm,
+        onDeleteConfirm = {
+            showDeleteConfirm = false
+            existingItem?.let { viewModel.deletePenjualan(it.id) }
+            onBack()
+        },
+        onDeleteDismiss = { showDeleteConfirm = false },
+        onDiscardConfirm = {
+            showDiscardConfirm = false
+            onBack()
+        },
+        onDiscardDismiss = { showDiscardConfirm = false }
+    )
 
     Scaffold(
         topBar = {

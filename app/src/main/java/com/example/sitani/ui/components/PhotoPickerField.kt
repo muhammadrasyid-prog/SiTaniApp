@@ -1,4 +1,4 @@
-package com.example.sitani
+package com.example.sitani.ui.components
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory

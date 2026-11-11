@@ -148,7 +148,7 @@ fun DasborScreen(
                         )
                         ShortcutCard(
                             "Kepentingan Umum",
-                            { onNavigate("menu") },
+                            { onNavigate("kepentingan") },
                             Modifier.weight(1f)
                         )
                     }

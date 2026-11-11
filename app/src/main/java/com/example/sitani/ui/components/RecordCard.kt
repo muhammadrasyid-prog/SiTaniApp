@@ -38,6 +38,8 @@ fun RecordCard(
     infoLeft: String? = null,
     infoRight: String? = null,
     isSynced: Boolean = true,
+    showSyncChip: Boolean = true,
+    showChevron: Boolean = true,
     onClick: () -> Unit = {}
 ) {
     Card(
@@ -68,17 +70,21 @@ fun RecordCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    if (isSynced) {
-                        StatusChip("Tersinkron", SuccessBg, BrandStrong)
-                    } else {
-                        StatusChip("Belum sinkron", WarningBg, WarningText)
+                    if (showSyncChip) {
+                        if (isSynced) {
+                            StatusChip("Tersinkron", SuccessBg, BrandStrong)
+                        } else {
+                            StatusChip("Belum sinkron", WarningBg, WarningText)
+                        }
                     }
-                    Icon(
-                        Icons.Default.KeyboardArrowRight,
-                        contentDescription = null,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    if (showChevron) {
+                        Icon(
+                            Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = TextSecondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 

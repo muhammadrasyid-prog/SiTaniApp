@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.sitani.data.PenjualanViewModel
+import com.example.sitani.data.KepentinganUmumViewModel
 import com.example.sitani.data.PerawatanViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
@@ -44,6 +45,9 @@ val navItems = listOf(
     NavItem("menu", "Menu", Icons.Default.Menu)
 )
 
+// Rute yang tetap menampilkan tab "Menu" sebagai tab terpilih
+val menuRoutes = setOf("menu", "kepentingan", "kepentingan/form", "kepentingan/form/{id}")
+
 @Composable
 fun MainScreen(onLogout: () -> Unit = {}) {
     val navController = rememberNavController()
@@ -55,7 +59,8 @@ fun MainScreen(onLogout: () -> Unit = {}) {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 navItems.forEach { item ->
                     NavigationBarItem(
-                        selected = currentRoute == item.route,
+                        selected = currentRoute == item.route ||
+                            (item.route == "menu" && currentRoute in menuRoutes),
                         onClick = {
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -103,6 +108,9 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                                 onNavigateToEdit = { id -> navController.navigate("lahan/form/$id") }
                             )
                         }
+                        "menu" -> MenuScreen(
+                            onNavigateToKepentinganUmum = { navController.navigate("kepentingan") }
+                        )
                         else -> PlaceholderScreen(item.label)
                     }
                 }
@@ -134,6 +142,29 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                 val id = backStackEntry.arguments?.getString("id")
                 val perawatanViewModel: PerawatanViewModel = viewModel()
                 PerawatanFormScreen(itemId = id, viewModel = perawatanViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable("kepentingan") {
+                val kepentinganViewModel: KepentinganUmumViewModel = viewModel()
+                KepentinganUmumScreen(
+                    viewModel = kepentinganViewModel,
+                    onNavigateToAdd = { navController.navigate("kepentingan/form") },
+                    onNavigateToEdit = { id -> navController.navigate("kepentingan/form/$id") }
+                )
+            }
+
+            composable("kepentingan/form") {
+                val kepentinganViewModel: KepentinganUmumViewModel = viewModel()
+                KepentinganUmumFormScreen(itemId = null, viewModel = kepentinganViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable(
+                route = "kepentingan/form/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")
+                val kepentinganViewModel: KepentinganUmumViewModel = viewModel()
+                KepentinganUmumFormScreen(itemId = id, viewModel = kepentinganViewModel, onBack = { navController.popBackStack() })
             }
         }
     }

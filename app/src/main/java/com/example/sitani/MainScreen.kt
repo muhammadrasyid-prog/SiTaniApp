@@ -25,6 +25,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.sitani.data.PenjualanViewModel
+import com.example.sitani.data.PerawatanViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -94,6 +95,14 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                             onNavigateToAdd = { navController.navigate("panen/form") },
                             onNavigateToEdit = { id -> navController.navigate("panen/form/$id") }
                         )
+                        "lahan" -> {
+                            val perawatanViewModel: PerawatanViewModel = viewModel()
+                            PerawatanScreen(
+                                viewModel = perawatanViewModel,
+                                onNavigateToAdd = { navController.navigate("lahan/form") },
+                                onNavigateToEdit = { id -> navController.navigate("lahan/form/$id") }
+                            )
+                        }
                         else -> PlaceholderScreen(item.label)
                     }
                 }
@@ -111,6 +120,20 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                 val id = backStackEntry.arguments?.getString("id")
                 val penjualanViewModel: PenjualanViewModel = viewModel()
                 PenjualanFormScreen(itemId = id, viewModel = penjualanViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable("lahan/form") {
+                val perawatanViewModel: PerawatanViewModel = viewModel()
+                PerawatanFormScreen(itemId = null, viewModel = perawatanViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable(
+                route = "lahan/form/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")
+                val perawatanViewModel: PerawatanViewModel = viewModel()
+                PerawatanFormScreen(itemId = id, viewModel = perawatanViewModel, onBack = { navController.popBackStack() })
             }
         }
     }

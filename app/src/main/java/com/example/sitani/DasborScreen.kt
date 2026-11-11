@@ -117,7 +117,7 @@ fun DasborScreen(
                         }
 
                         TextButton(
-                            onClick = { syncViewModel.syncPenjualan() },
+                            onClick = { syncViewModel.syncAll() },
                             enabled = !isSyncing
                         ) {
                             if (isSyncing) {

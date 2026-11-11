@@ -5,9 +5,23 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [PenjualanPanenEntity::class], version = 1, exportSchema = false)
+@Database(
+    entities = [
+        PenjualanPanenEntity::class,
+        PerawatanLahanEntity::class,
+        KepentinganUmumEntity::class,
+        PupukMasukEntity::class,
+        PupukTerpakaiEntity::class
+    ],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun penjualanPanenDao(): PenjualanPanenDao
+    abstract fun perawatanLahanDao(): PerawatanLahanDao
+    abstract fun kepentinganUmumDao(): KepentinganUmumDao
+    abstract fun pupukMasukDao(): PupukMasukDao
+    abstract fun pupukTerpakaiDao(): PupukTerpakaiDao
 
     companion object {
         @Volatile
@@ -19,7 +33,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "sitani_database"
-                ).build()
+                ).fallbackToDestructiveMigration(dropAllTables = true).build()
                 INSTANCE = instance
                 instance
             }

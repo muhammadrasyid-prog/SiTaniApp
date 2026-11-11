@@ -44,7 +44,7 @@ fun AppRoot() {
                 MainScreen(
                     onLogout = { scope.launch { repo.logout() } }
                 )
-            } else {
+            } else { 
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

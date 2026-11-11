@@ -28,6 +28,9 @@ interface PupukMasukDao {
     @Query("SELECT * FROM pupuk_masuk WHERE id = :id")
     suspend fun getById(id: String): PupukMasukEntity?
 
+    @Query("SELECT DISTINCT namaPupuk FROM pupuk_masuk WHERE deletedAt IS NULL AND namaPupuk != '' ORDER BY namaPupuk")
+    fun getDistinctNamaPupuk(): Flow<List<String>>
+
     @Query("UPDATE pupuk_masuk SET deletedAt = :deletedAt, updatedAt = :updatedAt, isSynced = 0 WHERE id = :id")
     suspend fun softDelete(id: String, deletedAt: Long, updatedAt: Long)
 }

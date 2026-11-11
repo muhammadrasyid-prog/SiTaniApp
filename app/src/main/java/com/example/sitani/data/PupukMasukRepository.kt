@@ -12,6 +12,8 @@ class PupukMasukRepository(private val dao: PupukMasukDao) {
 
     val allPupukMasuk: Flow<List<PupukMasukEntity>> = dao.getAllActive()
 
+    val distinctNamaPupuk: Flow<List<String>> = dao.getDistinctNamaPupuk()
+
     suspend fun save(
         id: String?,
         tanggal: String,

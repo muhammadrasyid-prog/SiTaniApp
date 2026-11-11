@@ -27,6 +27,7 @@ import androidx.navigation.navArgument
 import com.example.sitani.data.PenjualanViewModel
 import com.example.sitani.data.KepentinganUmumViewModel
 import com.example.sitani.data.PerawatanViewModel
+import com.example.sitani.data.PupukMasukViewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -45,8 +46,11 @@ val navItems = listOf(
     NavItem("menu", "Menu", Icons.Default.Menu)
 )
 
-// Rute yang tetap menampilkan tab "Menu" sebagai tab terpilih
-val menuRoutes = setOf("menu", "kepentingan", "kepentingan/form", "kepentingan/form/{id}")
+// Rute yang tetap menampilkan tabnya sebagai tab terpilih
+val tabRoutes = mapOf(
+    "menu" to setOf("menu", "kepentingan", "kepentingan/form", "kepentingan/form/{id}"),
+    "pupuk" to setOf("pupuk", "pupuk/masuk/form", "pupuk/masuk/form/{id}")
+)
 
 @Composable
 fun MainScreen(onLogout: () -> Unit = {}) {
@@ -60,7 +64,7 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                 navItems.forEach { item ->
                     NavigationBarItem(
                         selected = currentRoute == item.route ||
-                            (item.route == "menu" && currentRoute in menuRoutes),
+                            (currentRoute != null && currentRoute in tabRoutes[item.route].orEmpty()),
                         onClick = {
                             navController.navigate(item.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
@@ -111,6 +115,14 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                         "menu" -> MenuScreen(
                             onNavigateToKepentinganUmum = { navController.navigate("kepentingan") }
                         )
+                        "pupuk" -> {
+                            val pupukMasukViewModel: PupukMasukViewModel = viewModel()
+                            PupukScreen(
+                                viewModel = pupukMasukViewModel,
+                                onNavigateToAdd = { navController.navigate("pupuk/masuk/form") },
+                                onNavigateToEdit = { id -> navController.navigate("pupuk/masuk/form/$id") }
+                            )
+                        }
                         else -> PlaceholderScreen(item.label)
                     }
                 }
@@ -142,6 +154,20 @@ fun MainScreen(onLogout: () -> Unit = {}) {
                 val id = backStackEntry.arguments?.getString("id")
                 val perawatanViewModel: PerawatanViewModel = viewModel()
                 PerawatanFormScreen(itemId = id, viewModel = perawatanViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable("pupuk/masuk/form") {
+                val pupukMasukViewModel: PupukMasukViewModel = viewModel()
+                PupukMasukFormScreen(itemId = null, viewModel = pupukMasukViewModel, onBack = { navController.popBackStack() })
+            }
+
+            composable(
+                route = "pupuk/masuk/form/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("id")
+                val pupukMasukViewModel: PupukMasukViewModel = viewModel()
+                PupukMasukFormScreen(itemId = id, viewModel = pupukMasukViewModel, onBack = { navController.popBackStack() })
             }
 
             composable("kepentingan") {
